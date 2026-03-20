@@ -74,5 +74,66 @@ class ParserSingleLong(ParserTestCase):
         self.assertEqual(value, self.value)
 
 
+class TagParserTestCase(unittest.TestCase):
+    def _make_parser(self, packet):
+        from klvdata.tagparser import TagParser
+        return TagParser(packet)
+
+    def _tlv(self, encoded_tag, value):
+        return encoded_tag + bytes([len(value)]) + value
+
+    def test_single_byte_tag(self):
+        # Tags < 128 are a single byte; decoded integer equals the byte value.
+        value = b'\x00\x04\x60\x50\x58\x4E\x01\x80'
+        packet = self._tlv(b'\x02', value)
+        tag, parsed_value = next(self._make_parser(packet))
+        self.assertEqual(tag, 2)
+        self.assertEqual(parsed_value, value)
+
+    def test_two_byte_tag_128(self):
+        # Tag 128: BER-OID wire encoding is 0x81 0x00.
+        value = b'\xAB\xCD'
+        packet = self._tlv(b'\x81\x00', value)
+        tag, parsed_value = next(self._make_parser(packet))
+        self.assertEqual(tag, 128)
+        self.assertEqual(parsed_value, value)
+
+    def test_two_byte_tag_255(self):
+        # Tag 255: BER-OID wire encoding is 0x81 0x7F.
+        value = b'\x01\x02\x03'
+        packet = self._tlv(b'\x81\x7F', value)
+        tag, parsed_value = next(self._make_parser(packet))
+        self.assertEqual(tag, 255)
+        self.assertEqual(parsed_value, value)
+
+    def test_three_byte_tag_16384(self):
+        # Tag 16384 = 0x4000: BER-OID wire encoding is 0x81 0x80 0x00.
+        value = b'\xDE\xAD'
+        packet = self._tlv(b'\x81\x80\x00', value)
+        tag, parsed_value = next(self._make_parser(packet))
+        self.assertEqual(tag, 16384)
+        self.assertEqual(parsed_value, value)
+
+    def test_multiple_elements(self):
+        # Two consecutive BER-OID elements in one stream.
+        value1 = b'\xAA'
+        value2 = b'\xBB\xCC'
+        packet = self._tlv(b'\x02', value1) + self._tlv(b'\x81\x00', value2)
+        parser = self._make_parser(packet)
+        tag1, v1 = next(parser)
+        tag2, v2 = next(parser)
+        self.assertEqual(tag1, 2)
+        self.assertEqual(v1, value1)
+        self.assertEqual(tag2, 128)
+        self.assertEqual(v2, value2)
+
+    def test_exhausted_raises_stop_iteration(self):
+        packet = self._tlv(b'\x01', b'\xFF')
+        parser = self._make_parser(packet)
+        next(parser)
+        with self.assertRaises(StopIteration):
+            next(parser)
+
+
 if __name__ == "__main__":
     unittest.main()

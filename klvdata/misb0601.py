@@ -23,6 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from klvdata.common import ber_oid_encode
 from klvdata.common import hexstr_to_bytes
 from klvdata.element import UnknownElement
 from klvdata.elementparser import BytesElementParser
@@ -32,10 +33,12 @@ from klvdata.elementparser import StringElementParser
 from klvdata.elementparser import StringValue
 from klvdata.setparser import SetParser
 from klvdata.streamparser import StreamParser
+from klvdata.tagparser import TagParser
 
 
 class UnknownElement(UnknownElement):
-    pass
+    def __bytes__(self):
+        return ber_oid_encode(self.key) + bytes(self.length) + bytes(self.value)
 
 
 @StreamParser.add_parser
@@ -44,7 +47,7 @@ class UASLocalMetadataSet(SetParser):
     """
     key = hexstr_to_bytes('06 0E 2B 34 - 02 0B 01 01 – 0E 01 03 01 - 01 00 00 00')
     name = 'UAS Datalink Local Set'
-    key_length = 1
+    _parser_class = TagParser
     parsers = {}
 
     _unknown_element = UnknownElement

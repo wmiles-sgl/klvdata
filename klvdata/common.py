@@ -160,6 +160,22 @@ def float_to_bytes(value, _domain, _range, _error=None):
     return round(dst_value).to_bytes(length, byteorder='big', signed=(dst_min < 0))
 
 
+def ber_oid_encode(value):
+    """Return BER-OID encoded bytes for an integer tag value.
+
+    Each byte carries 7 value bits; bit 7 is set on all bytes except the last.
+    The 7-bit groups are emitted MSB-first.
+    """
+    if value < 0:
+        raise ValueError("BER-OID tag must be non-negative")
+    result = [value & 0x7F]
+    value >>= 7
+    while value:
+        result.append((value & 0x7F) | 0x80)
+        value >>= 7
+    return bytes(reversed(result))
+
+
 def packet_checksum(data):
     """Return two byte checksum from a SMPTE ST 336 KLV structured bytes object."""
     length = len(data) - 2

@@ -30,11 +30,13 @@ from collections import OrderedDict
 from klvdata.element import Element
 from klvdata.element import UnknownElement
 from klvdata.klvparser import KLVParser
+from klvdata.tagparser import TagParser
 
 
 class SetParser(Element, metaclass=ABCMeta):
     """Parsable Element. Not intended to be used directly. Always as super class."""
     _unknown_element = UnknownElement
+    _parser_class = KLVParser
 
     def __init__(self, value, key_length=1):
         """All parser needs is the value, no other information"""
@@ -45,20 +47,23 @@ class SetParser(Element, metaclass=ABCMeta):
         self.parse()
 
     def __getitem__(self, key):
-        """Return element provided bytes key.
+        """Return element by key.
 
-        For consistency of this collection of modules, __getitem__ does not
-        attempt to add convenience of being able to index by the int equivalent.
-        Instead, the user should pass keys with method bytes.
+        For KLVParser sets, pass a bytes key. For TagParser sets, pass an int tag.
         """
-        return self.items[bytes(key)]
+        return self.items[key]
 
     def parse(self):
         """Parse the parent into items. Called on init and modification of parent value.
 
         If a known parser is not available for key, parse as generic KLV element.
         """
-        for key, value in KLVParser(self.value, self.key_length):
+        if self._parser_class is TagParser:
+            parser = TagParser(self.value)
+        else:
+            parser = KLVParser(self.value, self.key_length)
+
+        for key, value in parser:
             try:
                 self.items[key] = self.parsers[key](value)
             except (KeyError, TypeError):
@@ -70,15 +75,14 @@ class SetParser(Element, metaclass=ABCMeta):
     def add_parser(cls, obj):
         """Decorator method used to register a parser to the class parsing repertoire.
 
-        obj is required to implement key attribute supporting bytes as returned by KLVParser key.
+        For TagParser sets, obj must implement a TAG attribute (int). For KLVParser
+        sets, obj must implement a key attribute supporting bytes conversion.
         """
-
-        # If sublcass of ElementParser does not implement key, dict accepts key of
-        # type property object. bytes(obj.key) will raise TypeError. ElementParser
-        # requires key as abstract property but no raise until instantiation which
-        # does not occur because the value is never recalled and instantiated from
-        # parsers.
-        cls.parsers[bytes(obj.key)] = obj
+        if cls._parser_class is TagParser:
+            key = getattr(obj, 'TAG', int.from_bytes(bytes(obj.key), 'big'))
+        else:
+            key = bytes(obj.key)
+        cls.parsers[key] = obj
 
         return obj
 
