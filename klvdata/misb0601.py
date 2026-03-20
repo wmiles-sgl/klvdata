@@ -28,6 +28,7 @@ from klvdata.common import hexstr_to_bytes
 from klvdata.element import UnknownElement
 from klvdata.elementparser import BytesElementParser
 from klvdata.elementparser import DateTimeElementParser
+from klvdata.elementparser import IMAPBElementParser
 from klvdata.elementparser import MappedElementParser
 from klvdata.elementparser import StringElementParser
 from klvdata.elementparser import StringValue
@@ -704,14 +705,14 @@ class GenericFlagData01(MappedElementParser):
     _error = None
 
 
-# @UASLocalMetadataSet.add_parser
-# class SecurityLocalMetadataSet(MappedElementParser):
-#     key = b'\x30'
-#     TAG = 48
-#     UDSKey = "06 0E 2B 34 02 03 01 01 0E 01 03 03 02 00 00 00"
-#     LDSName = "Security Local Set"
-#     ESDName = ""
-#     UDSName = "Security Local Set"
+@UASLocalMetadataSet.add_parser
+class SecurityLocalSet(BytesElementParser):
+    key = b'\x30'
+    TAG = 48
+    UDSKey = "06 0E 2B 34 02 03 01 01 0E 01 03 03 02 00 00 00"
+    LDSName = "Security Local Set"
+    ESDName = ""
+    UDSName = "Security Local Set"
 
 
 @UASLocalMetadataSet.add_parser
@@ -1117,14 +1118,14 @@ class SensorEastVelocity(MappedElementParser):
     _error = -2**15
     units = 'meters/second'
 
-# @UASLocalMetadataSet.add_parser
-# class ImageHorizonPixelPack(MappedElementParser):
-#     key = b'\x51'
-#     TAG = 81
-#     UDSKey = "-"
-#     LDSName = "Image Horizon Pixel Pack"
-#     ESDName = ""
-#     UDSName = ""
+@UASLocalMetadataSet.add_parser
+class ImageHorizonPixelPack(BytesElementParser):
+    key = b'\x51'
+    TAG = 81
+    UDSKey = "-"
+    LDSName = "Image Horizon Pixel Pack"
+    ESDName = ""
+    UDSName = ""
 
 
 @UASLocalMetadataSet.add_parser
@@ -1290,81 +1291,577 @@ class PlatformSideslipAngleFull(MappedElementParser):
     ESDName = ""
     UDSName = ""
     _domain = (-(2**31-1), 2**31-1)
-    _range = (-90, 90)
+    _range = (-180, 180)
     _error = -2**31
     units = 'degrees'
 
 
-#@UASLocalMetadataSet.add_parser
-# class MIISCoreIdentifier(StringElementParser):
-#     key = b'\x5E'
-#     TAG = 94
-#     UDSKey = "06 0E 2B 34 01 01 01 01 0E 01 04 05 03 00 00 00"
-#     LDSName = "MIIS Core Identifier"
-#     ESDName = ""
-#     UDSName = "Motion Imagery Identification System Core"
-
-
-#@UASLocalMetadataSet.add_parser
-# class SARMotionImageryLocalSet(StringElementParser):
-#     key = b'\x5F'
-#     TAG = 95
-#     UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 0D 00 00 00"
-#     LDSName = "SAR Motion Imagery Local Set"
-#     ESDName = ""
-#     UDSName = "SAR Motion Imagery Local Set"
+@UASLocalMetadataSet.add_parser
+class MIISCoreIdentifier(BytesElementParser):
+    key = b'\x5E'
+    TAG = 94
+    UDSKey = "06 0E 2B 34 01 01 01 01 0E 01 04 05 03 00 00 00"
+    LDSName = "MIIS Core Identifier"
+    ESDName = ""
+    UDSName = "Motion Imagery Identification System Core"
 
 
 @UASLocalMetadataSet.add_parser
-class TargetWidthExtended(MappedElementParser):
+class SARMotionImageryLocalSet(BytesElementParser):
+    key = b'\x5F'
+    TAG = 95
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 0D 00 00 00"
+    LDSName = "SAR Motion Imagery Local Set"
+    ESDName = ""
+    UDSName = "SAR Motion Imagery Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class TargetWidthExtended(IMAPBElementParser):
     key = b'\x60'
     TAG = 96
     UDSKey = "06 0E 2B 34 01 01 01 01 07 01 09 02 01 00 00 00"
     LDSName = "Target Width Extended"
     ESDName = "Target Width"
     UDSName = "Target Width"
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _range = (0, 1500000)
+    _length = 3  # ST 0601.19 recommended encoding length
     units = 'meters'
 
 
 @UASLocalMetadataSet.add_parser
-class DensityAltitudeExtended(MappedElementParser):
+class DensityAltitudeExtended(IMAPBElementParser):
     key = b'\x67'
     TAG = 103
     UDSKey = "06 0E 2B 34 01 01 01 01 0E 01 01 01 10 00 00 00"
     LDSName = "Density Altitude Extended"
     ESDName = "Density Altitude"
     UDSName = ""
-    _domain = (0, 2**16-1)
     _range = (-900, 40000)
-    _error = None
+    _length = 3  # ST 0601.19 recommended encoding length
     units = 'meters'
 
+
 @UASLocalMetadataSet.add_parser
-class SensorEllipsoidHeightExtended(MappedElementParser):
+class SensorEllipsoidHeightExtended(IMAPBElementParser):
     key = b'\x68'
     TAG = 104
     UDSKey = "06 0E 2B 34 01 01 01 01 0E 01 02 01 82 47 00 00"
     LDSName = "Sensor Ellipsoid Height Extended"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**16-1)
     _range = (-900, 40000)
-    _error = None
+    _length = 3  # ST 0601.19 recommended encoding length
     units = 'meters'
 
 
 @UASLocalMetadataSet.add_parser
-class AlternatePlatformEllipsoidHeightExtended(MappedElementParser):
+class AlternatePlatformEllipsoidHeightExtended(IMAPBElementParser):
     key = b'\x69'
     TAG = 105
     UDSKey = "06 0E 2B 34 01 01 01 01 0E 01 02 01 82 48 00 00"
-    LDSName = " Alternate Platform Ellipsoid Height Extended"
+    LDSName = "Alternate Platform Ellipsoid Height Extended"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**16-1)
     _range = (-900, 40000)
-    _error = None
+    _length = 3  # ST 0601.19 recommended encoding length
     units = 'meters'
+
+
+@UASLocalMetadataSet.add_parser
+class DeprecatedTag66(BytesElementParser):
+    key = b'\x42'
+    TAG = 66
+    UDSKey = "-"
+    LDSName = "Deprecated"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class RangeImageLocalSet(BytesElementParser):
+    key = b'\x61'
+    TAG = 97
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 16 00 00 00"
+    LDSName = "Range Image Local Set"
+    ESDName = ""
+    UDSName = "Range Image Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class GeoRegistrationLocalSet(BytesElementParser):
+    key = b'\x62'
+    TAG = 98
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 17 00 00 00"
+    LDSName = "Geo-Registration Local Set"
+    ESDName = ""
+    UDSName = "Geo-Registration Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class CompositeImagingLocalSet(BytesElementParser):
+    key = b'\x63'
+    TAG = 99
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 18 00 00 00"
+    LDSName = "Composite Imaging Local Set"
+    ESDName = ""
+    UDSName = "Composite Imaging Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class SegmentLocalSet(BytesElementParser):
+    key = b'\x64'
+    TAG = 100
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 19 00 00 00"
+    LDSName = "Segment Local Set"
+    ESDName = ""
+    UDSName = "Segment Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class AmendLocalSet(BytesElementParser):
+    key = b'\x65'
+    TAG = 101
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 1A 00 00 00"
+    LDSName = "Amend Local Set"
+    ESDName = ""
+    UDSName = "Amend Local Set"
+
+
+@UASLocalMetadataSet.add_parser
+class SDCCFLP(BytesElementParser):
+    key = b'\x66'
+    TAG = 102
+    UDSKey = "06 0E 2B 34 02 0B 01 01 0E 01 03 03 1B 00 00 00"
+    LDSName = "SDCC-FLP"
+    ESDName = ""
+    UDSName = "SDCC-FLP"
+
+
+@UASLocalMetadataSet.add_parser
+class StreamDesignator(StringElementParser):
+    key = b'\x6A'
+    TAG = 106
+    UDSKey = "-"
+    LDSName = "Stream Designator"
+    ESDName = ""
+    UDSName = ""
+    min_length, max_length = 0, 127
+
+
+@UASLocalMetadataSet.add_parser
+class OperationalBase(StringElementParser):
+    key = b'\x6B'
+    TAG = 107
+    UDSKey = "-"
+    LDSName = "Operational Base"
+    ESDName = ""
+    UDSName = ""
+    min_length, max_length = 0, 127
+
+
+@UASLocalMetadataSet.add_parser
+class BroadcastSource(StringElementParser):
+    key = b'\x6C'
+    TAG = 108
+    UDSKey = "-"
+    LDSName = "Broadcast Source"
+    ESDName = ""
+    UDSName = ""
+    min_length, max_length = 0, 127
+
+
+@UASLocalMetadataSet.add_parser
+class RangeToRecoveryLocation(IMAPBElementParser):
+    key = b'\x6D'
+    TAG = 109
+    UDSKey = "-"
+    LDSName = "Range To Recovery Location"
+    ESDName = ""
+    UDSName = ""
+    _range = (0, 21000)
+    _length = 3  # ST 0601.19 recommended encoding length
+    units = 'km'
+
+
+@UASLocalMetadataSet.add_parser
+class TimeAirborne(BytesElementParser):
+    key = b'\x6E'
+    TAG = 110
+    UDSKey = "-"
+    LDSName = "Time Airborne"
+    ESDName = ""
+    UDSName = ""
+    units = 'seconds'
+
+
+@UASLocalMetadataSet.add_parser
+class PropulsionUnitSpeed(BytesElementParser):
+    key = b'\x6F'
+    TAG = 111
+    UDSKey = "-"
+    LDSName = "Propulsion Unit Speed"
+    ESDName = ""
+    UDSName = ""
+    units = 'RPM'
+
+
+@UASLocalMetadataSet.add_parser
+class PlatformCourseAngle(IMAPBElementParser):
+    key = b'\x70'
+    TAG = 112
+    UDSKey = "-"
+    LDSName = "Platform Course Angle"
+    ESDName = ""
+    UDSName = ""
+    _range = (0, 360)
+    _length = 2  # ST 0601.19 recommended encoding length
+    units = 'degrees'
+
+
+@UASLocalMetadataSet.add_parser
+class AltitudeAGL(IMAPBElementParser):
+    key = b'\x71'
+    TAG = 113
+    UDSKey = "-"
+    LDSName = "Altitude AGL"
+    ESDName = ""
+    UDSName = ""
+    _range = (-900, 40000)
+    _length = 3  # ST 0601.19 recommended encoding length
+    units = 'meters'
+
+
+@UASLocalMetadataSet.add_parser
+class RadarAltimeter(IMAPBElementParser):
+    key = b'\x72'
+    TAG = 114
+    UDSKey = "-"
+    LDSName = "Radar Altimeter"
+    ESDName = ""
+    UDSName = ""
+    _range = (-900, 40000)
+    _length = 3  # ST 0601.19 recommended encoding length
+    units = 'meters'
+
+
+@UASLocalMetadataSet.add_parser
+class ControlCommand(BytesElementParser):
+    key = b'\x73'
+    TAG = 115
+    UDSKey = "-"
+    LDSName = "Control Command"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class ControlCommandVerificationList(BytesElementParser):
+    key = b'\x74'
+    TAG = 116
+    UDSKey = "-"
+    LDSName = "Control Command Verification List"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class SensorAzimuthRate(IMAPBElementParser):
+    key = b'\x75'
+    TAG = 117
+    UDSKey = "-"
+    LDSName = "Sensor Azimuth Rate"
+    ESDName = ""
+    UDSName = ""
+    _range = (-1000, 1000)
+    _length = 2  # ST 0601.19 recommended encoding length
+    units = 'degrees/second'
+
+
+@UASLocalMetadataSet.add_parser
+class SensorElevationRate(IMAPBElementParser):
+    key = b'\x76'
+    TAG = 118
+    UDSKey = "-"
+    LDSName = "Sensor Elevation Rate"
+    ESDName = ""
+    UDSName = ""
+    _range = (-1000, 1000)
+    _length = 3  # ST 0601.19 recommended encoding length
+    units = 'degrees/second'
+
+
+@UASLocalMetadataSet.add_parser
+class SensorRollRate(IMAPBElementParser):
+    key = b'\x77'
+    TAG = 119
+    UDSKey = "-"
+    LDSName = "Sensor Roll Rate"
+    ESDName = ""
+    UDSName = ""
+    _range = (-1000, 1000)
+    _length = 2  # ST 0601.19 recommended encoding length
+    units = 'degrees/second'
+
+
+@UASLocalMetadataSet.add_parser
+class OnboardMIStoragePercentFull(IMAPBElementParser):
+    key = b'\x78'
+    TAG = 120
+    UDSKey = "-"
+    LDSName = "On-board MI Storage Percent Full"
+    ESDName = ""
+    UDSName = ""
+    _range = (0, 100)
+    _length = 2  # ST 0601.19 recommended encoding length
+    units = '%'
+
+
+@UASLocalMetadataSet.add_parser
+class ActiveWavelengthList(BytesElementParser):
+    key = b'\x79'
+    TAG = 121
+    UDSKey = "-"
+    LDSName = "Active Wavelength List"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class CountryCodes(BytesElementParser):
+    key = b'\x7A'
+    TAG = 122
+    UDSKey = "-"
+    LDSName = "Country Codes"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class NumberOfNAVSATsInView(MappedElementParser):
+    key = b'\x7B'
+    TAG = 123
+    UDSKey = "-"
+    LDSName = "Number of NAVSATs in View"
+    ESDName = ""
+    UDSName = ""
+    _domain = (0, 2**8-1)
+    _range = (0, 255)
+    _error = None
+
+
+@UASLocalMetadataSet.add_parser
+class PositioningMethodSource(BytesElementParser):
+    key = b'\x7C'
+    TAG = 124
+    UDSKey = "-"
+    LDSName = "Positioning Method Source"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class PlatformStatus(MappedElementParser):
+    key = b'\x7D'
+    TAG = 125
+    UDSKey = "-"
+    LDSName = "Platform Status"
+    ESDName = ""
+    UDSName = ""
+    _domain = (0, 2**8-1)
+    _range = (0, 255)
+    _error = None
+
+
+@UASLocalMetadataSet.add_parser
+class SensorControlMode(MappedElementParser):
+    key = b'\x7E'
+    TAG = 126
+    UDSKey = "-"
+    LDSName = "Sensor Control Mode"
+    ESDName = ""
+    UDSName = ""
+    _domain = (0, 2**8-1)
+    _range = (0, 255)
+    _error = None
+
+
+@UASLocalMetadataSet.add_parser
+class SensorFrameRatePack(BytesElementParser):
+    key = b'\x7F'
+    TAG = 127
+    UDSKey = "-"
+    LDSName = "Sensor Frame Rate Pack"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class WavelengthsList(BytesElementParser):
+    key = ber_oid_encode(128)
+    TAG = 128
+    UDSKey = "-"
+    LDSName = "Wavelengths List"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class TargetID(StringElementParser):
+    key = ber_oid_encode(129)
+    TAG = 129
+    UDSKey = "-"
+    LDSName = "Target ID"
+    ESDName = ""
+    UDSName = ""
+    min_length, max_length = 0, 127
+
+
+@UASLocalMetadataSet.add_parser
+class AirbaseLocations(BytesElementParser):
+    key = ber_oid_encode(130)
+    TAG = 130
+    UDSKey = "-"
+    LDSName = "Airbase Locations"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class TakeOffTime(DateTimeElementParser):
+    key = ber_oid_encode(131)
+    TAG = 131
+    UDSKey = "-"
+    LDSName = "Take-off Time"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class TransmissionFrequency(IMAPBElementParser):
+    key = ber_oid_encode(132)
+    TAG = 132
+    UDSKey = "-"
+    LDSName = "Transmission Frequency"
+    ESDName = ""
+    UDSName = ""
+    _range = (1, 99999)
+    _length = 3  # ST 0601.19 recommended encoding length
+    units = 'MHz'
+
+
+@UASLocalMetadataSet.add_parser
+class OnboardMIStorageCapacity(BytesElementParser):
+    key = ber_oid_encode(133)
+    TAG = 133
+    UDSKey = "-"
+    LDSName = "On-board MI Storage Capacity"
+    ESDName = ""
+    UDSName = ""
+    units = 'GB'
+
+
+@UASLocalMetadataSet.add_parser
+class ZoomPercentage(IMAPBElementParser):
+    key = ber_oid_encode(134)
+    TAG = 134
+    UDSKey = "-"
+    LDSName = "Zoom Percentage"
+    ESDName = ""
+    UDSName = ""
+    _range = (0, 100)
+    _length = 2  # ST 0601.19 recommended encoding length
+    units = '%'
+
+
+@UASLocalMetadataSet.add_parser
+class CommunicationsMethod(StringElementParser):
+    key = ber_oid_encode(135)
+    TAG = 135
+    UDSKey = "-"
+    LDSName = "Communications Method"
+    ESDName = ""
+    UDSName = ""
+    min_length, max_length = 0, 127
+
+
+@UASLocalMetadataSet.add_parser
+class LeapSeconds(BytesElementParser):
+    key = ber_oid_encode(136)
+    TAG = 136
+    UDSKey = "-"
+    LDSName = "Leap Seconds"
+    ESDName = ""
+    UDSName = ""
+    units = 'seconds'
+
+
+@UASLocalMetadataSet.add_parser
+class CorrectionOffset(BytesElementParser):
+    key = ber_oid_encode(137)
+    TAG = 137
+    UDSKey = "-"
+    LDSName = "Correction Offset"
+    ESDName = ""
+    UDSName = ""
+    units = 'microseconds'
+
+
+@UASLocalMetadataSet.add_parser
+class PayloadList(BytesElementParser):
+    key = ber_oid_encode(138)
+    TAG = 138
+    UDSKey = "-"
+    LDSName = "Payload List"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class ActivePayloads(BytesElementParser):
+    key = ber_oid_encode(139)
+    TAG = 139
+    UDSKey = "-"
+    LDSName = "Active Payloads"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class WeaponsStores(BytesElementParser):
+    key = ber_oid_encode(140)
+    TAG = 140
+    UDSKey = "-"
+    LDSName = "Weapons Stores"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class WaypointList(BytesElementParser):
+    key = ber_oid_encode(141)
+    TAG = 141
+    UDSKey = "-"
+    LDSName = "Waypoint List"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class ViewDomain(BytesElementParser):
+    key = ber_oid_encode(142)
+    TAG = 142
+    UDSKey = "-"
+    LDSName = "View Domain"
+    ESDName = ""
+    UDSName = ""
+
+
+@UASLocalMetadataSet.add_parser
+class MetadataSubstreamIDPack(BytesElementParser):
+    key = ber_oid_encode(143)
+    TAG = 143
+    UDSKey = "-"
+    LDSName = "Metadata Substream ID Pack"
+    ESDName = ""
+    UDSName = ""

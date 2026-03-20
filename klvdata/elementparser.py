@@ -33,6 +33,8 @@ from klvdata.common import bytes_to_hexstr
 from klvdata.common import bytes_to_str
 from klvdata.common import datetime_to_bytes
 from klvdata.common import float_to_bytes
+from klvdata.common import imapb_forward
+from klvdata.common import imapb_reverse
 from klvdata.common import str_to_bytes
 from klvdata.common import ieee754_bytes_to_fp
                                            
@@ -174,6 +176,53 @@ class MappedValue(BaseValue):
 
     def __float__(self):
         return self.value
+
+class IMAPBElementParser(ElementParser, metaclass=ABCMeta):
+    """Parser for IMAPB variable-length floating-point mapped items (ST 1201).
+
+    Subclasses declare:
+        _range   = (a, b)   – physical min/max
+        _length  = N        – default encoding byte count (used when encoding
+                              from a float; decoding always uses actual byte count)
+    """
+    _length = 2
+
+    def __init__(self, value):
+        super().__init__(IMAPBValue(value, self._range, self._length))
+
+    @property
+    @classmethod
+    @abstractmethod
+    def _range(cls):
+        pass
+
+
+class IMAPBValue(BaseValue):
+    def __init__(self, value, _range, _default_length=2):
+        self._range = _range
+        self._enc_length = _default_length
+        try:
+            raw = bytes(value)
+            if raw:
+                self._enc_length = len(raw)
+                self.value = imapb_reverse(raw, _range[0], _range[1])
+            else:
+                self.value = None
+        except TypeError:
+            # Constructed from a Python numeric value rather than bytes
+            self.value = float(value) if value is not None else None
+
+    def __bytes__(self):
+        return imapb_forward(self.value, self._range[0], self._range[1], self._enc_length)
+
+    def __str__(self):
+        if self.value is not None:
+            return format(self.value)
+        return ""
+
+    def __float__(self):
+        return float(self.value)
+
 
 class IEEE754ElementParser(ElementParser, metaclass=ABCMeta):
     def __init__(self, value):

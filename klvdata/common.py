@@ -176,6 +176,50 @@ def ber_oid_encode(value):
     return bytes(reversed(result))
 
 
+def imapb_reverse(raw_bytes, a, b):
+    """Decode IMAPB (ST 1201) variable-length unsigned integer bytes to a float.
+
+    Returns None for any special value (NaN, out-of-range, etc.).
+    """
+    import math
+    L = len(raw_bytes)
+    if L == 0:
+        return None
+    y = int.from_bytes(raw_bytes, 'big')
+    # Special value: top two bits both set
+    if y >> (8 * L - 2) == 3:
+        return None
+    bPow = math.ceil(math.log2(b - a))
+    dPow = 8 * L - 1
+    sR = 2.0 ** (bPow - dPow)
+    Zoffset = 0.0
+    if a < 0 < b:
+        sF = 2.0 ** (dPow - bPow)
+        Zoffset = sF * a - math.floor(sF * a)
+    return sR * (y - Zoffset) + a
+
+
+def imapb_forward(value, a, b, length):
+    """Encode a float to IMAPB (ST 1201) bytes of the given length.
+
+    A None value encodes as the IMAP_BELOW_MINIMUM special value (0xE0…00).
+    """
+    import math
+    if value is None:
+        result = bytearray(length)
+        result[0] = 0xE0
+        return bytes(result)
+    bPow = math.ceil(math.log2(b - a))
+    dPow = 8 * length - 1
+    sF = 2.0 ** (dPow - bPow)
+    Zoffset = 0.0
+    if a < 0 < b:
+        Zoffset = sF * a - math.floor(sF * a)
+    y = int(math.trunc(sF * (value - a) + Zoffset))
+    y = max(0, min(y, (1 << dPow) - 1))
+    return y.to_bytes(length, 'big')
+
+
 def packet_checksum(data):
     """Return two byte checksum from a SMPTE ST 336 KLV structured bytes object."""
     length = len(data) - 2
