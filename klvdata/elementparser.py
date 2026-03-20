@@ -224,6 +224,52 @@ class IMAPBValue(BaseValue):
         return float(self.value)
 
 
+class IntegerElementParser(ElementParser, metaclass=ABCMeta):
+    """Parser for big-endian integer items.
+
+    Subclasses may set:
+        _signed = True   – for signed integers (default False)
+        _length = N      – to fix serialization to exactly N bytes (default None = minimum bytes needed)
+    """
+    _signed = False
+    _length = None
+
+    def __init__(self, value):
+        super().__init__(IntegerValue(value, self._signed, self._length))
+
+
+class IntegerValue(BaseValue):
+    def __init__(self, value, signed=False, length=None):
+        self._signed = signed
+        self._length = length
+        if isinstance(value, int):
+            self.value = value
+        else:
+            try:
+                self.value = bytes_to_int(bytes(value), signed=signed)
+            except TypeError:
+                self.value = int(value) if value is not None else None
+
+    def __bytes__(self):
+        if self.value is None:
+            return b'\x00'
+        if self._length is not None:
+            length = self._length
+        elif self._signed:
+            length = max(1, (self.value.bit_length() + 8) // 8)
+        else:
+            length = max(1, (self.value.bit_length() + 7) // 8)
+        return self.value.to_bytes(length, byteorder='big', signed=self._signed)
+
+    def __str__(self):
+        if self.value is not None:
+            return str(self.value)
+        return ""
+
+    def __int__(self):
+        return self.value
+
+
 class IEEE754ElementParser(ElementParser, metaclass=ABCMeta):
     def __init__(self, value):
         super().__init__(IEEE754Value(value))

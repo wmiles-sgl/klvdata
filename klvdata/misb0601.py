@@ -25,10 +25,11 @@
 
 from klvdata.common import ber_oid_encode
 from klvdata.common import hexstr_to_bytes
-from klvdata.element import UnknownElement
+from klvdata.element import UnknownElement as BaseUnknownElement
 from klvdata.elementparser import BytesElementParser
 from klvdata.elementparser import DateTimeElementParser
 from klvdata.elementparser import IMAPBElementParser
+from klvdata.elementparser import IntegerElementParser
 from klvdata.elementparser import MappedElementParser
 from klvdata.elementparser import StringElementParser
 from klvdata.elementparser import StringValue
@@ -37,7 +38,7 @@ from klvdata.streamparser import StreamParser
 from klvdata.tagparser import TagParser
 
 
-class UnknownElement(UnknownElement):
+class UnknownElement(BaseUnknownElement):
     def __bytes__(self):
         return ber_oid_encode(self.key) + bytes(self.length) + bytes(self.value)
 
@@ -156,30 +157,26 @@ class PlatformRollAngle(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class PlatformTrueAirspeed(MappedElementParser):
+class PlatformTrueAirspeed(IntegerElementParser):
     key = b'\x08'
     TAG = 8
     UDSKey = "-"
     LDSName = "Platform True Airspeed"
     ESDName = "True Airspeed"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
     units = 'meters/second'
 
 
 @UASLocalMetadataSet.add_parser
-class PlatformIndicatedAirspeed(MappedElementParser):
+class PlatformIndicatedAirspeed(IntegerElementParser):
     key = b'\x09'
     TAG = 9
     UDSKey = "-"
     LDSName = "Platform Indicated Airspeed"
     ESDName = "Indicated Airspeed"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
     units = 'meters/second'
 
 
@@ -511,16 +508,14 @@ class OffsetCornerLongitudePoint4(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class IcingDetected(MappedElementParser):
+class IcingDetected(IntegerElementParser):
     key = b'\x22'
     TAG = 34
     UDSKey = ""
     LDSName = "Icing Detected"
     ESDName = "Icing Detected"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _length = 1
     units = 'flag'
 
 
@@ -581,17 +576,16 @@ class DensityAltitude(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class OutsideAirTemperature(MappedElementParser):
+class OutsideAirTemperature(IntegerElementParser):
     key = b'\x27'
     TAG = 39
     UDSKey = "-"
     LDSName = "Outside Air Temperature"
     ESDName = "Air Temperature"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
-    units = 'celcius'
+    _signed = True
+    _length = 1
+    units = 'celsius'
 
 
 @UASLocalMetadataSet.add_parser
@@ -693,16 +687,14 @@ class TargetErrorEstimateLE90(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class GenericFlagData01(MappedElementParser):
+class GenericFlagData01(IntegerElementParser):
     key = b'\x2F'
     TAG = 47
     UDSKey = "-"
     LDSName = "Generic Flag Data 01"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
@@ -814,16 +806,14 @@ class RelativeHumidity(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class PlatformGroundSpeed(MappedElementParser):
+class PlatformGroundSpeed(IntegerElementParser):
     key = b'\x38'
     TAG = 56
     UDSKey = "-"
     LDSName = "Platform Ground Speed"
     ESDName = "Platform Ground Speed"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
     units = 'meters/second'
 
 
@@ -866,53 +856,45 @@ class PlatformCallSign(StringElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class WeaponLoad(MappedElementParser):
+class WeaponLoad(IntegerElementParser):
     key = b'\x3C'
     TAG = 60
     UDSKey = "-"
     LDSName = "Weapon Load"
     ESDName = "Weapon Load"
     UDSName = ""
-    _domain = (0, 2**16-1)
-    _range = (0, 2**16-1)
-    _error = None
+    _length = 2
 
 @UASLocalMetadataSet.add_parser
-class WeaponFired(MappedElementParser):
+class WeaponFired(IntegerElementParser):
     key = b'\x3D'
     TAG = 61
     UDSKey = "-"
     LDSName = "Weapon Fired"
     ESDName = "Weapon Fired"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
-class LaserPRFCode(MappedElementParser):
+class LaserPRFCode(IntegerElementParser):
     key = b'\x3E'
     TAG = 62
     UDSKey = "-"
     LDSName = "Laser PRF Code"
     ESDName = "Laser PRF Code"
     UDSName = ""
-    _domain = (0, 2**16-1)
-    _range = (0, 65535)
-    _error = None
+    _length = 2
 
 @UASLocalMetadataSet.add_parser
-class SensorFieldOfViewName(MappedElementParser):
+class SensorFieldOfViewName(IntegerElementParser):
     key = b'\x3F'
     TAG = 63
     UDSKey = "-"
     LDSName = "Sensor Field of View Name"
     ESDName = "Sensor Field of View Name"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _length = 1
 
 @UASLocalMetadataSet.add_parser
 class PlatformMagneticHeading(MappedElementParser):
@@ -929,16 +911,14 @@ class PlatformMagneticHeading(MappedElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class UASLSVersionNumber(MappedElementParser):
+class UASLSVersionNumber(IntegerElementParser):
     key = b'\x41'
     TAG = 65
     UDSKey = "-"
     LDSName = "UAS Datalink LS Version Number"
     ESDName = "ESD ICD Version"
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 2**8-1)
-    _error = None
+    _length = 1
     units = 'number'
 
 
@@ -1485,7 +1465,7 @@ class RangeToRecoveryLocation(IMAPBElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class TimeAirborne(BytesElementParser):
+class TimeAirborne(IntegerElementParser):
     key = b'\x6E'
     TAG = 110
     UDSKey = "-"
@@ -1496,7 +1476,7 @@ class TimeAirborne(BytesElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class PropulsionUnitSpeed(BytesElementParser):
+class PropulsionUnitSpeed(IntegerElementParser):
     key = b'\x6F'
     TAG = 111
     UDSKey = "-"
@@ -1638,52 +1618,47 @@ class CountryCodes(BytesElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class NumberOfNAVSATsInView(MappedElementParser):
+class NumberOfNAVSATsInView(IntegerElementParser):
     key = b'\x7B'
     TAG = 123
     UDSKey = "-"
     LDSName = "Number of NAVSATs in View"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
-class PositioningMethodSource(BytesElementParser):
+class PositioningMethodSource(IntegerElementParser):
     key = b'\x7C'
     TAG = 124
     UDSKey = "-"
     LDSName = "Positioning Method Source"
     ESDName = ""
     UDSName = ""
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
-class PlatformStatus(MappedElementParser):
+class PlatformStatus(IntegerElementParser):
     key = b'\x7D'
     TAG = 125
     UDSKey = "-"
     LDSName = "Platform Status"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
-class SensorControlMode(MappedElementParser):
+class SensorControlMode(IntegerElementParser):
     key = b'\x7E'
     TAG = 126
     UDSKey = "-"
     LDSName = "Sensor Control Mode"
     ESDName = ""
     UDSName = ""
-    _domain = (0, 2**8-1)
-    _range = (0, 255)
-    _error = None
+    _length = 1
 
 
 @UASLocalMetadataSet.add_parser
@@ -1751,7 +1726,7 @@ class TransmissionFrequency(IMAPBElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class OnboardMIStorageCapacity(BytesElementParser):
+class OnboardMIStorageCapacity(IntegerElementParser):
     key = ber_oid_encode(133)
     TAG = 133
     UDSKey = "-"
@@ -1786,24 +1761,26 @@ class CommunicationsMethod(StringElementParser):
 
 
 @UASLocalMetadataSet.add_parser
-class LeapSeconds(BytesElementParser):
+class LeapSeconds(IntegerElementParser):
     key = ber_oid_encode(136)
     TAG = 136
     UDSKey = "-"
     LDSName = "Leap Seconds"
     ESDName = ""
     UDSName = ""
+    _signed = True
     units = 'seconds'
 
 
 @UASLocalMetadataSet.add_parser
-class CorrectionOffset(BytesElementParser):
+class CorrectionOffset(IntegerElementParser):
     key = ber_oid_encode(137)
     TAG = 137
     UDSKey = "-"
     LDSName = "Correction Offset"
     ESDName = ""
     UDSName = ""
+    _signed = True
     units = 'microseconds'
 
 

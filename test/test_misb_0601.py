@@ -123,7 +123,7 @@ class ParserSingleShort(unittest.TestCase):
     def test_PlatformTrueAirspeed(self):
         example_value = 147
         example_ls_packet = hexstr_to_bytes('08 01 93')
-        interpretation_string = "147.0"
+        interpretation_string = "147"
 
         from klvdata.misb0601 import PlatformTrueAirspeed
         self.assertEqual(bytes(PlatformTrueAirspeed(example_value)), example_ls_packet)
@@ -133,7 +133,7 @@ class ParserSingleShort(unittest.TestCase):
     def test_PlatformIndicatedAirspeed(self):
         example_value = 159
         example_ls_packet = hexstr_to_bytes('09 01 9f')
-        interpretation_string = "159.0"
+        interpretation_string = "159"
 
         from klvdata.misb0601 import PlatformIndicatedAirspeed
         self.assertEqual(bytes(PlatformIndicatedAirspeed(example_value)), example_ls_packet)
