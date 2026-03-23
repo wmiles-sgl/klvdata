@@ -104,7 +104,7 @@ class SetParser(Element, metaclass=ABCMeta):
                 try:
                     metadata[item.TAG] = (item.LDSName, item.ESDName, item.UDSName, str(item.value.value))
                 except:
-                    None
+                    pass
                 if hasattr(item, 'items'):
                     repeat(item.items.values(), indent + 1)
         repeat(self.items.values())
