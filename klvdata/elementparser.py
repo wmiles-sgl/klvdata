@@ -25,6 +25,7 @@
 
 from abc import ABCMeta
 from abc import abstractmethod
+from typing import ClassVar
 from klvdata.element import Element
 from klvdata.common import bytes_to_datetime
 from klvdata.common import bytes_to_int
@@ -53,14 +54,10 @@ class ElementParser(Element, metaclass=ABCMeta):
     on super with class key and instance value.
     """
 
+    key: ClassVar[bytes]
+
     def __init__(self, value):
         super().__init__(self.key, value)
-
-    @property
-    @classmethod
-    @abstractmethod
-    def key(cls):
-        pass
 
     def __repr__(self):
         """Return as-code string used to re-create the object."""
@@ -134,26 +131,12 @@ class StringValue(BaseValue):
 
 
 class MappedElementParser(ElementParser, metaclass=ABCMeta):
+    _domain: ClassVar[tuple]
+    _range: ClassVar[tuple]
+    _error: ClassVar
+
     def __init__(self, value):
         super().__init__(MappedValue(value, self._domain, self._range, self._error))
-
-    @property
-    @classmethod
-    @abstractmethod
-    def _domain(cls):
-        pass
-
-    @property
-    @classmethod
-    @abstractmethod
-    def _range(cls):
-        pass
-
-    @property
-    @classmethod
-    @abstractmethod
-    def _error(cls):
-        pass
 
 class MappedValue(BaseValue):
     def __init__(self, value, _domain, _range, _error):
@@ -185,16 +168,11 @@ class IMAPBElementParser(ElementParser, metaclass=ABCMeta):
         _length  = N        – default encoding byte count (used when encoding
                               from a float; decoding always uses actual byte count)
     """
-    _length = 2
+    _range: ClassVar[tuple]
+    _length: ClassVar[int] = 2
 
     def __init__(self, value):
         super().__init__(IMAPBValue(value, self._range, self._length))
-
-    @property
-    @classmethod
-    @abstractmethod
-    def _range(cls):
-        pass
 
 
 class IMAPBValue(BaseValue):

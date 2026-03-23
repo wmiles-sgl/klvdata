@@ -27,6 +27,7 @@ from pprint import pformat
 from abc import ABCMeta
 from abc import abstractmethod
 from collections import OrderedDict
+from typing import ClassVar
 from klvdata.element import Element
 from klvdata.element import UnknownElement
 from klvdata.klvparser import KLVParser
@@ -86,19 +87,7 @@ class SetParser(Element, metaclass=ABCMeta):
 
         return obj
 
-    @property
-    @classmethod
-    @abstractmethod
-    def parsers(cls):
-        # Property must define __getitem__
-        pass
-
-    @parsers.setter
-    @classmethod
-    @abstractmethod
-    def parsers(cls):
-        # Property must define __setitem__
-        pass
+    parsers: ClassVar[dict]
 
     def __repr__(self):
         return pformat(self.items, indent=1)
