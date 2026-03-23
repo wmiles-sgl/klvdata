@@ -154,6 +154,8 @@ def float_to_bytes(value, _domain, _range, _error=None):
     src_min, src_max, dst_min, dst_max = src_domain + dst_range
     length = int((dst_max - dst_min - 1).bit_length() / 8)
     if value is None:
+        if _error is None:
+            raise ValueError("Cannot serialize None value: element has no error sentinel")
         dst_value = _error
     else:
         dst_value = linear_map(value, src_domain=src_domain, dst_range=dst_range)
