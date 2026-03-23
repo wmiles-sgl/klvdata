@@ -23,7 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from klvdata.element import UnknownElement
+from klvdata.element import UnknownElement as BaseUnknownElement
 from klvdata.elementparser import BytesElementParser
 from klvdata.misb0601 import UASLocalMetadataSet
 from klvdata.setparser import SetParser
@@ -68,7 +68,7 @@ _object_country_coding = {
 }
 
 
-class UnknownElement(UnknownElement):
+class UnknownElement(BaseUnknownElement):
     pass
 
 

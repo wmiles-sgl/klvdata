@@ -24,8 +24,7 @@
 # SOFTWARE.
 
 from klvdata.common import hexstr_to_bytes
-from klvdata.element import UnknownElement
-from klvdata.elementparser import BytesElementParser
+from klvdata.element import UnknownElement as BaseUnknownElement
 from klvdata.elementparser import DateTimeElementParser
 from klvdata.elementparser import StringElementParser
 from klvdata.elementparser import IEEE754ElementParser
@@ -35,7 +34,7 @@ from klvdata.streamparser import StreamParser
 
 
 
-class UnknownElement(UnknownElement):
+class UnknownElement(BaseUnknownElement):
     pass
 
 
