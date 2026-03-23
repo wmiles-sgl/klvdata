@@ -67,12 +67,12 @@ class ElementParser(Element, metaclass=ABCMeta):
 class BaseValue(metaclass=ABCMeta):
     """Abstract base class (superclass) used to insure internal interfaces are maintained."""
     @abstractmethod
-    def __bytes__(self):
+    def __bytes__(self) -> bytes:
         """Required by element.Element"""
         pass
 
     @abstractmethod
-    def __str__(self):
+    def __str__(self) -> str:
         """Required by element.Element"""
         pass
 
@@ -198,7 +198,9 @@ class IMAPBValue(BaseValue):
             return format(self.value)
         return ""
 
-    def __float__(self):
+    def __float__(self) -> float:
+        if self.value is None:
+            raise TypeError("Cannot convert None to float")
         return float(self.value)
 
 

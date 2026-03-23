@@ -72,7 +72,7 @@ class Element(metaclass=ABCMeta):
         return len(bytes(self.value))
 
     @abstractmethod
-    def __repr__(self):
+    def __repr__(self) -> str:
         pass
 
     def __str__(self):
