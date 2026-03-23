@@ -25,6 +25,7 @@
 
 from abc import ABCMeta
 from abc import abstractmethod
+from typing import ClassVar
 from klvdata.common import ber_encode
 
 
@@ -40,19 +41,22 @@ class Element(metaclass=ABCMeta):
     Attributes:
         key
         value
+        name: Class name by default; subclasses may override with a literal string.
 
     Properties:
-        name: If name is set return name, else return class name.
         length: Length is calculated based off value.
     """
+
+    name: ClassVar[str]
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if 'name' not in cls.__dict__:
+            cls.name = cls.__name__
 
     def __init__(self, key, value):
         self.key = key
         self.value = value
-
-    @property
-    def name(self):
-        return self.__class__.__name__
 
     @property
     def length(self):
