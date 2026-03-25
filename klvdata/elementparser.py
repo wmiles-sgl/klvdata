@@ -38,6 +38,7 @@ from klvdata.common import imapb_forward
 from klvdata.common import imapb_reverse
 from klvdata.common import str_to_bytes
 from klvdata.common import ieee754_bytes_to_fp
+from klvdata.common import ieee754_fp_to_bytes
                                            
 
 
@@ -256,15 +257,19 @@ class IEEE754ElementParser(ElementParser, metaclass=ABCMeta):
 
 
 class IEEE754Value(BaseValue):
-    def __init__(self, value):
+    def __init__(self, value, length=None):
+        self._length = length
         try:
             self.value = ieee754_bytes_to_fp(value)
         except TypeError:
             self.value = value
 
     def __bytes__(self):
-        #TODO
-        return ieee754_double_to_bytes(self.value)
+        if self._length is not None:
+            length = self._length
+        else:
+            length = 8  # Double precision
+        return ieee754_fp_to_bytes(self.value, length)
 
     def __str__(self):
         return bytes_to_hexstr(self.value, start='0x', sep='')

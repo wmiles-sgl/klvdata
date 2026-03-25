@@ -135,8 +135,7 @@ def bytes_to_float(value, _domain, _range, _error=None):
 
 
 def ieee754_bytes_to_fp(value):
-    """Convert the fixed point value self.value to a ieee754 double point value."""
-    #src_value = int().from_bytes(value, byteorder='big', signed=False)
+    """Convert bytes to a floating point number"""
     l = len(value)
     if l == 4:
         return unpack('>f', value)[0]
@@ -144,6 +143,17 @@ def ieee754_bytes_to_fp(value):
         return unpack('>d', value)[0]
     else:
         raise ValueError
+
+
+def ieee754_fp_to_bytes(value, length=8):
+    """Convert a floating point value to a big-endian bytes representation"""
+    if length == 4:
+        return pack('>f', value)
+    elif length == 8:
+        return pack('>d', value)
+    else:
+        raise ValueError("Unsupported length for floating point value")
+
 
 def float_to_bytes(value, _domain, _range, _error=None):
     """Convert the fixed point value self.value to a floating point value."""
